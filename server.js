@@ -5,61 +5,61 @@ dotenv.config();
 
 const app = express();
 
-/*
- * Recebe qualquer formato enviado pelo WaSeller:
- * JSON, texto ou formulário.
- */
-app.use(
-  express.raw({
-    type: "*/*",
-    limit: "5mb",
-  })
-);
+// Aceita JSON
+app.use(express.json());
 
+// Aceita formulário
+app.use(express.urlencoded({ extended: true }));
+
+// Página inicial
 app.get("/", (req, res) => {
-  res.status(200).send("Inter Connect Online");
+    res.send("Inter Connect Online");
 });
 
+// Teste GET
+app.get("/webhook", (req, res) => {
+    res.send("OK");
+});
+
+// Recebe QUALQUER webhook
 app.all("/webhook", (req, res) => {
-  try {
-    let body = {};
 
-    if (Buffer.isBuffer(req.body)) {
-      const rawBody = req.body.toString("utf8");
+    console.log("");
+    console.log("====================================");
+    console.log("NOVO WEBHOOK RECEBIDO");
+    console.log("====================================");
 
-      console.log("========== WEBHOOK RECEBIDO ==========");
-      console.log("Método:", req.method);
-      console.log("Content-Type:", req.headers["content-type"]);
-      console.log("Conteúdo bruto:", rawBody);
+    console.log("Método:");
+    console.log(req.method);
 
-      try {
-        body = JSON.parse(rawBody);
-      } catch {
-        try {
-          body = Object.fromEntries(new URLSearchParams(rawBody));
-        } catch {
-          body = { raw: rawBody };
-        }
-      }
-    } else {
-      body = req.body || {};
-    }
+    console.log("");
 
-    console.log("Conteúdo interpretado:");
-    console.log(JSON.stringify(body, null, 2));
+    console.log("Headers:");
+    console.log(req.headers);
 
-    // Resposta simples e imediata para o WaSeller
-    return res.status(200).type("text/plain").send("OK");
-  } catch (error) {
-    console.error("Erro ao receber webhook:", error);
+    console.log("");
 
-    // Mesmo com falha no log, responde OK para não gerar reenvios em loop
-    return res.status(200).type("text/plain").send("OK");
-  }
+    console.log("Query:");
+    console.log(req.query);
+
+    console.log("");
+
+    console.log("Body:");
+    console.log(req.body);
+
+    console.log("");
+
+    console.log("Body completo:");
+    console.log(JSON.stringify(req.body, null, 2));
+
+    console.log("");
+
+    res.status(200).send("OK");
+
 });
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Servidor iniciado na porta ${PORT}`);
+app.listen(PORT, () => {
+    console.log(`Servidor iniciado na porta ${PORT}`);
 });
