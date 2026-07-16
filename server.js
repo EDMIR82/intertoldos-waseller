@@ -5,61 +5,47 @@ dotenv.config();
 
 const app = express();
 
-// Aceita JSON
-app.use(express.json());
-
-// Aceita formulário
+app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// Página inicial
+// CORS
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "*");
+    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+
+    if (req.method === "OPTIONS") {
+        console.log("Recebido OPTIONS");
+        return res.sendStatus(200);
+    }
+
+    next();
+});
+
 app.get("/", (req, res) => {
     res.send("Inter Connect Online");
 });
 
-// Teste GET
 app.get("/webhook", (req, res) => {
-    res.send("OK");
+    res.send("Webhook OK");
 });
 
-// Recebe QUALQUER webhook
-app.all("/webhook", (req, res) => {
+app.post("/webhook", (req, res) => {
 
-    console.log("");
-    console.log("====================================");
-    console.log("NOVO WEBHOOK RECEBIDO");
-    console.log("====================================");
+    console.log("=================================");
+    console.log("POST RECEBIDO");
+    console.log("=================================");
 
-    console.log("Método:");
-    console.log(req.method);
-
-    console.log("");
-
-    console.log("Headers:");
-    console.log(req.headers);
-
-    console.log("");
-
-    console.log("Query:");
-    console.log(req.query);
-
-    console.log("");
-
-    console.log("Body:");
     console.log(req.body);
 
-    console.log("");
-
-    console.log("Body completo:");
-    console.log(JSON.stringify(req.body, null, 2));
-
-    console.log("");
-
-    res.status(200).send("OK");
+    res.status(200).json({
+        success: true
+    });
 
 });
 
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log(`Servidor iniciado na porta ${PORT}`);
+    console.log("Servidor iniciado porta " + PORT);
 });
